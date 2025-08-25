@@ -3,7 +3,7 @@ import { GoogleGenAI } from "@google/genai";
 
 export default function Gemini() {
   const [responseText, setResponseText] = useState("");
-  const ai = new GoogleGenAI({ apiKey: "AIzaSyCf3s1A49XLizYKXXR2Hvvs_VB_5l35CMk" });
+  const ai = new GoogleGenAI({ apiKey: "apiKey" });
 
   useEffect(() => {
     async function main() {
