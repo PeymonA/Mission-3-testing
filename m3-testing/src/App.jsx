@@ -1,15 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css'
-import Gemini from './components/Gemini.jsx'
+import { GoogleGenAI } from "@google/genai";
 import MyTextInput from './components/TextInput.jsx'
 
 function App() {
-  const [outputValue, setOutputValue] = useState('');
+  const [textValue, setTextValue] = useState('');
+  const [onUse, setOnUse] = useState(false);
+  const [responseText, setResponseText] = useState("");
+  const ai = new GoogleGenAI({ apiKey: "API KEY" });
+
+  useEffect(() => {
+    if (!onUse) return;
+    async function main() {
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: textValue,
+      });
+      setResponseText(response.text);
+    }
+    main();
+  }, [onUse, textValue]);
 
   return (
     <>
-      <MyTextInput outputValue={outputValue} setOutputValue={setOutputValue} /> 
-      <p>Current output: {outputValue}</p>
+      <MyTextInput setTextValue={setTextValue} setOnUse={setOnUse}/>    
+      <p>{responseText}</p> 
     </>
   )
 }

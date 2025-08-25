@@ -7,7 +7,8 @@ function MyTextInput(props) {
         setInputValue(event.target.value); // Update state on input change
     };
     const handleClick = () => {
-        props.setOutputValue(inputValue);
+        props.setTextValue(inputValue);
+        props.setOnUse(true);
     };
     return (
     <div>
