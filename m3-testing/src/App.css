@@ -9,3 +9,11 @@
     flex-direction: row;
     align-items: center;
 }
+
+.sectionLeft {
+    margin: 10px;
+}
+
+.chat-message {
+    margin: 10px;
+}

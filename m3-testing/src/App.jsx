@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './App.css'
-import { GoogleGenAI } from "@google/genai";
+
+import { initializeApp } from "firebase/app";
+import { getAI, getGenerativeModel, GoogleAIBackend } from "firebase/ai";
+
 import MyTextInput from './components/TextInput.jsx'
 import ChatLog from './components/ChatLog.jsx'
-import JobInput from './components/JobInput.jsx'
 
 function App() {
   const [textValue, setTextValue] = useState('');
@@ -12,57 +14,67 @@ function App() {
   const [jobType, setJobType] = useState('');
   const [jobOnUse, setJobOnUse] = useState(false);
 
-  const [chat, setChat] = useState([]);
+  const [chatHistory, setChatHistory] = useState([]);
+  const [originalPrompt, setOriginalPrompt] = useState("");
 
-  const [responseText, setResponseText] = useState("");
-  const ai = new GoogleGenAI({ apiKey: "" });
+  const firebaseConfig = {
 
-  useEffect(() => {
-    console.log(jobType);
-    if (!onUse) return;
-    async function main() {
-      chat.push(textValue)
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: textValue,
-      });
-      setResponseText(response.text);
-      chat.push(response.text);
-      console.log(chat);
-    }
-    main();
-  }, [onUse, textValue, chat]);
+  };
 
+  const app = initializeApp(firebaseConfig);
+
+  const ai = getAI(app, { backend: new GoogleAIBackend() });
+  const model = getGenerativeModel(ai, { model: "gemini-2.5-flash" });
+
+  const chat = model.startChat();
+
+  //Original Prompt
   useEffect(() => {
     if (!jobOnUse) return;
-    const prompt = `You are a job interviewer. You are interviewing a candidate for the position of ${jobType}.
+    async function main() {
+      const prompt = `You are a job interviewer. You are interviewing a candidate for the position of ${jobType}.
         Ask them one question at a time and wait for their response before asking the next question.
-        The flow will start with the you saying “Tell me about yourself”. You should ask at least 6 questions
+        The flow will start with the you saying “Tell me about yourself”. You should ask exactly 6 questions
         based on response of the user.  Other than the first question. At the end of the whole interview,
         You should comment on how well the user answered the questions, and suggest how the user can improve
         its response.`
-    console.log(prompt);
-    async function main() {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: prompt,
-      });
-      setResponseText(response.text);
-      chat.push(response.text);
-      console.log(chat);
+      setOriginalPrompt("User: " + prompt);
+      const result = await chat.sendMessage(prompt);
+      const response = result.response;
+      const text = response.text();
+      setChatHistory(prevChatHistory => [...prevChatHistory,"Model: " + text]);
     }
     main();
-  }, [jobOnUse, jobType, chat]);
+  }, [jobOnUse, jobType]);
+
+  // Following Chat
+  useEffect(() => {
+    if (!onUse) return;
+    async function main() {
+      const prompt = `Here is the chat history so far: ${originalPrompt} ${chatHistory.toString()}
+        The candidate just answered: ${textValue} give your next reply`;
+      setChatHistory(prevChatHistory => [...prevChatHistory, "User: " + textValue]);
+      const result = await chat.sendMessage(prompt);
+      const response = result.response;
+      const text = response.text();
+      setChatHistory(prevChatHistory => [...prevChatHistory, "Model: " + text]);
+    }
+    main();
+  }, [onUse, textValue]);
+
+
   return (
     <>
       <div className='section'>
         <h1>AI Mock Interviewer</h1>
         <div className='sectionChild'>
-          <h2>Job Title:</h2>
-          <MyTextInput setTextValue={setJobType} setOnUse={setJobOnUse} />
+          <div className='sectionLeft'>
+            <h2>Job Title:</h2>
+          </div>
+          <MyTextInput setTextValue={setJobType} setOnUse={setJobOnUse}/>
         </div>
         <div className='sectionChild'>
-          <ChatLog chat={chat} />
+          <ChatLog chat={chatHistory} />
         </div>
         <div className='sectionChild'>
           <MyTextInput setTextValue={setTextValue} setOnUse={setOnUse} />
