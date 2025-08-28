@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './App.css'
 
+/*
 import { initializeApp } from "firebase/app";
 import { getAI, getGenerativeModel, GoogleAIBackend } from "firebase/ai";
+*/
+import { GoogleGenAI } from "@google/genai";
 
 import MyTextInput from './components/TextInput.jsx'
 import ChatLog from './components/ChatLog.jsx'
@@ -17,18 +20,9 @@ function App() {
   const [chatHistory, setChatHistory] = useState([]);
   const [originalPrompt, setOriginalPrompt] = useState("");
 
-  const firebaseConfig = {
+  const ai = new GoogleGenAI({ apiKey: "API KEY" });  
 
-  };
-
-  const app = initializeApp(firebaseConfig);
-
-  const ai = getAI(app, { backend: new GoogleAIBackend() });
-  const model = getGenerativeModel(ai, { model: "gemini-2.5-flash" });
-
-  const chat = model.startChat();
-
-  //Original Prompt
+  // First Prompt
   useEffect(() => {
     if (!jobOnUse) return;
     async function main() {
@@ -39,9 +33,11 @@ function App() {
         You should comment on how well the user answered the questions, and suggest how the user can improve
         its response.`
       setOriginalPrompt("User: " + prompt);
-      const result = await chat.sendMessage(prompt);
-      const response = result.response;
-      const text = response.text();
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+      const text = response.text;
       setChatHistory(prevChatHistory => [...prevChatHistory,"Model: " + text]);
     }
     main();
@@ -54,9 +50,11 @@ function App() {
       const prompt = `Here is the chat history so far: ${originalPrompt} ${chatHistory.toString()}
         The candidate just answered: ${textValue} give your next reply`;
       setChatHistory(prevChatHistory => [...prevChatHistory, "User: " + textValue]);
-      const result = await chat.sendMessage(prompt);
-      const response = result.response;
-      const text = response.text();
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+      const text = response.text;
       setChatHistory(prevChatHistory => [...prevChatHistory, "Model: " + text]);
     }
     main();
