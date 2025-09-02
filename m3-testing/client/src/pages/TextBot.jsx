@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import './App.css'
+import '../App.css'
 
-/*
-import { initializeApp } from "firebase/app";
-import { getAI, getGenerativeModel, GoogleAIBackend } from "firebase/ai";
-*/
 import { GoogleGenAI } from "@google/genai";
 
-import MyTextInput from './components/TextInput.jsx'
-import ChatLog from './components/ChatLog.jsx'
+import MyTextInput from '../components/TextInput.jsx'
+import ChatLog from '../components/ChatLog.jsx'
+import MyTextInputNoButton from '../components/TextInputNoButton.jsx';
 
-function App() {
+function TextBot() {
   const [textValue, setTextValue] = useState('');
   const [onUse, setOnUse] = useState(false);
 
@@ -20,7 +17,7 @@ function App() {
   const [chatHistory, setChatHistory] = useState([]);
   const [originalPrompt, setOriginalPrompt] = useState("");
 
-  const ai = new GoogleGenAI({ apiKey: "API KEY" });  
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });  
 
   // First Prompt
   useEffect(() => {
@@ -64,12 +61,12 @@ function App() {
   return (
     <>
       <div className='section'>
-        <h1>AI Mock Interviewer</h1>
+        <h1>AI Mock Interviewer Text</h1>
         <div className='sectionChild'>
           <div className='sectionLeft'>
             <h2>Job Title:</h2>
           </div>
-          <MyTextInput setTextValue={setJobType} setOnUse={setJobOnUse}/>
+          <MyTextInputNoButton setTextValue={setJobType} setOnUse={setJobOnUse}/>
         </div>
         <div className='sectionChild'>
           <ChatLog chat={chatHistory} />
@@ -82,4 +79,4 @@ function App() {
   )
 }
 
-export default App
+export default TextBot;
