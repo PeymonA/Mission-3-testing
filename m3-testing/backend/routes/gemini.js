@@ -3,7 +3,7 @@ var router = express.Router();
 var genai = require('@google/genai');
 
 router.post('/', function(req, res, next) {
-    const ai = new genai.GoogleGenAI({ apiKey: 'AIzaSyCf3s1A49XLizYKXXR2Hvvs_VB_5l35CMk' });
+    const ai = new genai.GoogleGenAI({ apiKey: 'oops' });
 
     const prompt = req.body;
 
